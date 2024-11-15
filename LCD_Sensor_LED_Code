@@ -1,0 +1,102 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+#define trigPin 12 //Sensor Trig pin connected to Arduino pin 12
+#define echoPin 13 //Sensor Echo pin connected to Arduino pin 13
+
+// 7 LEDs
+const int LED1 = 8;
+const int LED2 = 7;
+const int LED3 = 6;
+const int LED4 = 5;
+const int LED5 = 4;
+const int LED6 = 3;
+const int LED7 = 2;
+
+long duration, distance, distanceInch;
+
+void setup() {
+  // LCD Screen setup
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
+  lcd.setCursor(1,0);          //Welcome Screen
+  lcd.print("DISTANCE METER");
+  delay(2000);
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("WILL BEGIN IN");
+  delay(2000);
+  lcd.clear();
+  lcd.setCursor(6,0);
+  lcd.print("THREE");
+  delay(1000);
+  lcd.clear();
+  lcd.setCursor(7,0);
+  lcd.print("TWO");
+  delay(1000);
+  lcd.clear();
+  lcd.setCursor(7,0);
+  lcd.print("ONE");
+  delay(1000);
+  lcd.clear();
+  lcd.setCursor(0,0);   //Starts to display distance
+  lcd.print("Distance:"); 
+
+  // Initialize ultrasonic sensor
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  // Initialize LEDs
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(LED4, OUTPUT);
+  pinMode(LED5, OUTPUT);
+  pinMode(LED6, OUTPUT);
+  pinMode(LED7, OUTPUT);
+
+  Serial.begin(9600); // Initialize serial communication for debugging
+}
+
+void loop() {
+  // Trigger ultrasonic sensor
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // Measure duration and calculate distance
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration / 2) / 29.1;
+  distanceInch = duration * 0.0133 / 2;
+
+  // Display distance on LCD
+  lcd.setCursor(9,0);
+  lcd.print("                "); // Clear previous distance to display new distance
+  lcd.setCursor(9,0);
+  lcd.print(distance);
+  lcd.print(" cm");
+  lcd.setCursor(9,1);
+  lcd.print("                "); // Clear previous distance in inches to display new distance
+  lcd.setCursor(9,1);
+  lcd.print(distanceInch);
+  lcd.print(" inch");
+
+  // Print distance to Serial Monitor
+  Serial.println(distance);
+
+  // LED control based on distance, close distance = more LEDs, far distance = less LEDs
+  digitalWrite(LED1, distance <= 7 ? HIGH : LOW);
+  digitalWrite(LED2, distance <= 14 ? HIGH : LOW);
+  digitalWrite(LED3, distance <= 21 ? HIGH : LOW);
+  digitalWrite(LED4, distance <= 28 ? HIGH : LOW);
+  digitalWrite(LED5, distance <= 35 ? HIGH : LOW);
+  digitalWrite(LED6, distance <= 42 ? HIGH : LOW);
+  digitalWrite(LED7, distance <= 49 ? HIGH : LOW);
+
+  delay(200); // Pause to let things settle
+}
